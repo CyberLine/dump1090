@@ -26,21 +26,21 @@ function fetchData() {
 		for (var j=0; j < data.length; j++) {
 			// Do we already have this plane object in Planes?
 			// If not make it.
-			if (Planes[data[j].hex]) {
-				var plane = Planes[data[j].hex];
+			if (Planes[data[j].h]) {
+				var plane = Planes[data[j].h];
 			} else {
 				var plane = jQuery.extend(true, {}, planeObject);
 			}
 
 			/* For special squawk tests
-			if (data[j].hex == '48413x') {
-            	data[j].squawk = '7700';
-            } //*/
+			if (data[j].h == '48413x') {
+				data[j].sq = '7700';
+			} //*/
 
-            // Set SpecialSquawk-value
-            if (data[j].squawk == '7500' || data[j].squawk == '7600' || data[j].squawk == '7700') {
-                SpecialSquawk = true;
-            }
+			// Set SpecialSquawk-value
+			if (data[j].sq == '7500' || data[j].sq == '7600' || data[j].sq == '7700') {
+				SpecialSquawk = true;
+			}
 
 			// Call the function update
 			plane.funcUpdateData(data[j]);

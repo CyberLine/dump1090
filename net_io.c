@@ -647,6 +647,7 @@ char *aircraftsToJson(int *len) {
     while(a) {
         int position = 0;
         int track = 0;
+        int speed = 0;
 
         if (a->modeACflags & MODEAC_MSG_FLAG) { // skip any fudged ICAO records Mode A/C
             a = a->next;
@@ -661,13 +662,17 @@ char *aircraftsToJson(int *len) {
             track = 1;
         }
 
+        if (a->bFlags & MODES_ACFLAGS_SPEED_VALID) {
+            speed = 1;
+        }
+
         // No metric conversion
         l = snprintf(p,buflen,
             "{\"h\":\"%06x\", \"sq\":\"%04x\", \"f\":\"%s\", \"lt\":%f, "
             "\"ln\":%f, \"vp\":%d, \"a\":%d,  \"r\":%d,\"t\":%d, \"vt\":%d,"
-            "\"s\":%d, \"m\":%ld, \"l\":%d},\n",
+            "\"s\":%d, \"vs\":%d, \"m\":%ld, \"l\":%d},\n",
             a->addr, a->modeA, a->flight, a->lat, a->lon, position, a->altitude, a->vert_rate, a->track, track,
-            a->speed, a->messages, (int)(now - a->seen));
+            a->speed, speed, a->messages, (int)(now - a->seen));
         p += l; buflen -= l;
 
         //Resize if needed
