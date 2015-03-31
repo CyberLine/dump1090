@@ -23,6 +23,7 @@ var planeObject = {
 	// Vaild...
 	vPosition	: false,
 	vTrack		: false,
+	vSpeed		: false,
 
 	// GMap Details
 	marker		: null,
@@ -208,6 +209,12 @@ var planeObject = {
 				this.vTrack = true;
 			else
 				this.vTrack = false;
+
+			// Do we have a valid track for the plane?
+			if (data.vs == 1)
+				this.vSpeed = true;
+			else
+				this.vSpeed = false;
 		},
 
 	// Update our marker on the map

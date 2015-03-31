@@ -291,7 +291,7 @@ function refreshSelected() {
 	}
 
 	html += '<tr><td>Speed: '
-	if (selected) {
+	if (selected && selected.vSpeed) {
 	    if (Metric) {
 	        html += Math.round(selected.speed * 1.852) + ' km/h';
 	    } else {
@@ -349,12 +349,16 @@ function refreshSelected() {
 	document.getElementById('plane_detail').innerHTML = html;
 }
 
-// Right now we have no means to validate the speed is good
-// Want to return (n/a) when we dont have it
-// TODO: Edit C code to add a valid speed flag
-// TODO: Edit js code to use said flag
-function normalizeSpeed(speed, valid) {
-	return speed
+function normalizeSpeed(speed, valid, metric) {
+	if (valid) {
+        if (metric) {
+            return Math.round(speed * 1.852);
+        } else {
+            return speed;
+        }
+    } else {
+        return '&nbsp;';
+    }
 }
 
 // Returns back a long string, short string, and the track if we have a vaild track path
@@ -453,30 +457,31 @@ function refreshTableInfo() {
 
     	    if (Metric) {
     			html += '<td align="right">' + Math.round(tableplane.altitude / 3.2828) + '</td>';
-    			html += '<td align="right">' + Math.round(tableplane.speed * 1.852) + '</td>';
+    			html += '<td align="right">' + normalizeSpeed(tableplane.speed, tableplane.vSpeed, true) + '</td>';
     	    } else {
     	        html += '<td align="right">' + tableplane.altitude + '</td>';
-    	        html += '<td align="right">' + tableplane.speed + '</td>';
+    	        html += '<td align="right">' + normalizeSpeed(tableplane.speed, tableplane.vSpeed, false) + '</td>';
     	    }
-                        // Add distance column to table if site coordinates are provided
-                        if (SiteShow && (typeof SiteLat !==  'undefined' || typeof SiteLon !==  'undefined')) {
-                        html += '<td align="right">';
-                            if (tableplane.vPosition) {
-                                var siteLatLon  = new google.maps.LatLng(SiteLat, SiteLon);
-                                var planeLatLon = new google.maps.LatLng(tableplane.latitude, tableplane.longitude);
-                                var dist = google.maps.geometry.spherical.computeDistanceBetween (siteLatLon, planeLatLon);
-                                    if (Metric) {
-                                        dist /= 1000;
-                                    } else {
-                                        dist /= 1852;
-                                    }
-                                dist = (Math.round((dist)*10)/10).toFixed(1);
-                                html += dist;
-                            } else {
-                            html += '0';
-                            }
-                            html += '</td>';
+
+            // Add distance column to table if site coordinates are provided
+            if (SiteShow && (typeof SiteLat !==  'undefined' || typeof SiteLon !==  'undefined')) {
+            html += '<td align="right">';
+                if (tableplane.vPosition) {
+                    var siteLatLon  = new google.maps.LatLng(SiteLat, SiteLon);
+                    var planeLatLon = new google.maps.LatLng(tableplane.latitude, tableplane.longitude);
+                    var dist = google.maps.geometry.spherical.computeDistanceBetween (siteLatLon, planeLatLon);
+                        if (Metric) {
+                            dist /= 1000;
+                        } else {
+                            dist /= 1852;
                         }
+                    dist = (Math.round((dist)*10)/10).toFixed(1);
+                    html += dist;
+                } else {
+                html += '0';
+                }
+                html += '</td>';
+            }
 
 			html += '<td align="right">';
 			if (tableplane.vTrack) {
