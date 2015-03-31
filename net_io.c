@@ -649,6 +649,9 @@ char *aircraftsToJson(int *len) {
         int track = 0;
         int speed = 0;
 
+        unsigned char * pSig = a->signalLevel;
+        unsigned int signalAverage = (pSig[0] + pSig[1] + pSig[2] + pSig[3] + pSig[4] + pSig[5] + pSig[6] + pSig[7] + 3) >> 3;
+
         if (a->modeACflags & MODEAC_MSG_FLAG) { // skip any fudged ICAO records Mode A/C
             a = a->next;
             continue;
@@ -670,9 +673,9 @@ char *aircraftsToJson(int *len) {
         l = snprintf(p,buflen,
             "{\"h\":\"%06x\", \"sq\":\"%04x\", \"f\":\"%s\", \"lt\":%f, "
             "\"ln\":%f, \"vp\":%d, \"a\":%d,  \"r\":%d,\"t\":%d, \"vt\":%d,"
-            "\"s\":%d, \"vs\":%d, \"m\":%ld, \"l\":%d},\n",
+            "\"s\":%d, \"vs\":%d, \"m\":%ld, \"l\":%d, \"sa\":%u, \"ls\":%lu, \"sll\":%lu},\n",
             a->addr, a->modeA, a->flight, a->lat, a->lon, position, a->altitude, a->vert_rate, a->track, track,
-            a->speed, speed, a->messages, (int)(now - a->seen));
+            a->speed, speed, a->messages, (int)(now - a->seen), signalAverage, a->seen, a->seenLatLon);
         p += l; buflen -= l;
 
         //Resize if needed
@@ -801,7 +804,7 @@ int handleHTTPRequest(struct client *c, char *p) {
     snprintf(ctype, sizeof ctype, MODES_CONTENT_TYPE_HTML); // Default content type
     ext = strrchr(getFile, '.');
 
-    if (strlen(ext) > 0) {
+    if (ext) {
         if (strstr(ext, ".json")) {
             snprintf(ctype, sizeof ctype, MODES_CONTENT_TYPE_JSON);
         } else if (strstr(ext, ".css")) {
@@ -917,7 +920,7 @@ void modesReadFromClient(struct client *c, char *sep,
             // in the buffer, note that we full-scan the buffer at every read for simplicity.
 
             left = c->buflen;                                  // Length of valid search for memchr()
-            while (left && ((s = memchr(e, (char) 0x1a, left)) != NULL)) { // The first byte of buffer 'should' be 0x1a
+            while (left > 1 && ((s = memchr(e, (char) 0x1a, left)) != NULL)) { // The first byte of buffer 'should' be 0x1a
                 s++;                                           // skip the 0x1a
                 if        (*s == '1') {
                     e = s + MODEAC_MSG_BYTES      + 8;         // point past remainder of message
