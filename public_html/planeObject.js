@@ -9,12 +9,12 @@ var planeObject = {
 	track		: null,
 	latitude	: null,
 	longitude	: null,
-	
+
 	// Info about the plane
 	flight		: null,
 	squawk		: null,
 	icao		: null,
-	is_selected	: false,	
+	is_selected	: false,
 
 	// Data packet numbers
 	messages	: null,
@@ -63,7 +63,7 @@ var planeObject = {
 			if (this.seen > 15) {
 				this.markerColor = StaleColor;
 			}
-			
+
 			// Plane marker
             var baseSvg = {
                 planeData : "M 1.9565564,41.694305 C 1.7174505,40.497708 1.6419973,38.448747 " +
@@ -138,16 +138,16 @@ var planeObject = {
 
 			// Update all of our data
 			this.updated	= new Date().getTime();
-			this.altitude	= data.altitude;
-			this.speed	= data.speed;
-			this.track	= data.track;
-			this.latitude	= data.lat;
-			this.longitude	= data.lon;
-			this.flight	= data.flight;
-			this.squawk	= data.squawk;
-			this.icao	= data.hex;
-			this.messages	= data.messages;
-			this.seen	= data.seen;
+			this.altitude	= data.a;
+			this.speed	= data.s;
+			this.track	= data.t;
+			this.latitude	= data.lt;
+			this.longitude	= data.ln;
+			this.flight	= data.f;
+			this.squawk	= data.sq;
+			this.icao	= data.h;
+			this.messages	= data.m;
+			this.seen	= data.l;
 
 			// If no packet in over 58 seconds, consider the plane reapable
 			// This way we can hold it, but not show it just in case the plane comes back
@@ -174,7 +174,7 @@ var planeObject = {
 			}
 
 			// Is the position valid?
-			if ((data.validposition == 1) && (this.reapable == false)) {
+			if ((data.vp == 1) && (this.reapable == false)) {
 				this.vPosition = true;
 
 				// Detech if the plane has moved
@@ -204,7 +204,7 @@ var planeObject = {
 			}
 
 			// Do we have a valid track for the plane?
-			if (data.validtrack == 1)
+			if (data.vt == 1)
 				this.vTrack = true;
 			else
 				this.vTrack = false;

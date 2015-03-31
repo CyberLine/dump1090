@@ -18,10 +18,10 @@ CenterLon = Number(localStorage['CenterLon']) || CONST_CENTERLON;
 ZoomLvl   = Number(localStorage['ZoomLvl']) || CONST_ZOOMLVL;
 
 function fetchData() {
-	$.getJSON('/dump1090/data.json', function(data) {
+	$.getJSON('https://home.quadrat4.de/dump1090/data.json', function(data) {
 		PlanesOnMap = 0
 		SpecialSquawk = false;
-		
+
 		// Loop through all the planes in the data packet
 		for (var j=0; j < data.length; j++) {
 			// Do we already have this plane object in Planes?
@@ -31,12 +31,12 @@ function fetchData() {
 			} else {
 				var plane = jQuery.extend(true, {}, planeObject);
 			}
-			
+
 			/* For special squawk tests
 			if (data[j].hex == '48413x') {
             	data[j].squawk = '7700';
             } //*/
-            
+
             // Set SpecialSquawk-value
             if (data[j].squawk == '7500' || data[j].squawk == '7600' || data[j].squawk == '7700') {
                 SpecialSquawk = true;
@@ -44,7 +44,7 @@ function fetchData() {
 
 			// Call the function update
 			plane.funcUpdateData(data[j]);
-			
+
 			// Copy the plane into Planes
 			Planes[plane.icao] = plane;
 		}
@@ -157,25 +157,25 @@ function initialize() {
 	}));
 
 	GoogleMap.mapTypes.set("dark_map", styledMap);
-	
+
 	// Listeners for newly created Map
     google.maps.event.addListener(GoogleMap, 'center_changed', function() {
         localStorage['CenterLat'] = GoogleMap.getCenter().lat();
         localStorage['CenterLon'] = GoogleMap.getCenter().lng();
     });
-    
+
     google.maps.event.addListener(GoogleMap, 'zoom_changed', function() {
         localStorage['ZoomLvl']  = GoogleMap.getZoom();
-    }); 
-	
+    });
+
 	// Add home marker if requested
 	if (SiteShow && (typeof SiteLat !==  'undefined' || typeof SiteLon !==  'undefined')) {
 	    var siteMarker  = new google.maps.LatLng(SiteLat, SiteLon);
 	    var markerImage = new google.maps.MarkerImage(
-	        'http://maps.google.com/mapfiles/kml/pal4/icon57.png',
+	        '//maps.google.com/mapfiles/kml/pal4/icon57.png',
             new google.maps.Size(32, 32),   // Image size
             new google.maps.Point(0, 0),    // Origin point of image
-            new google.maps.Point(16, 16)); // Position where marker should point 
+            new google.maps.Point(16, 16)); // Position where marker should point
 	    var marker = new google.maps.Marker({
           position: siteMarker,
           map: GoogleMap,
@@ -183,14 +183,14 @@ function initialize() {
           title: 'My Radar Site',
           zIndex: -99999
         });
-        
+
         if (SiteCircles) {
             for (var i=0;i<SiteCirclesDistances.length;i++) {
               drawCircle(marker, SiteCirclesDistances[i]); // in meters
             }
         }
 	}
-	
+
 	// These will run after page is complitely loaded
 	$(window).load(function() {
         $('#dialog-modal').css('display', 'inline'); // Show hidden settings-windows content
@@ -201,7 +201,7 @@ function initialize() {
 
 	// Did our crafty user need some setup?
 	extendedInitalize();
-	
+
 	// Setup our timer to poll from the server.
 	window.setInterval(function() {
 		fetchData();
@@ -231,7 +231,7 @@ function reaper() {
 			PlanesToReap++;
 		}
 	};
-} 
+}
 
 // Refresh the detail window about the plane
 function refreshSelected() {
@@ -239,16 +239,16 @@ function refreshSelected() {
 	if (typeof SelectedPlane !== 'undefined' && SelectedPlane != "ICAO" && SelectedPlane != null) {
     	selected = Planes[SelectedPlane];
     }
-	
+
 	var columns = 2;
 	var html = '';
-	
+
 	if (selected) {
     	html += '<table id="selectedinfo" width="100%">';
     } else {
         html += '<table id="selectedinfo" class="dim" width="100%">';
     }
-	
+
 	// Flight header line including squawk if needed
 	if (selected && selected.flight == "") {
 	    html += '<tr><td colspan="' + columns + '" id="selectedinfotitle"><b>N/A (' +
@@ -257,9 +257,9 @@ function refreshSelected() {
 	    html += '<tr><td colspan="' + columns + '" id="selectedinfotitle"><b>' +
 	        selected.flight + '</b>';
 	} else {
-	    html += '<tr><td colspan="' + columns + '" id="selectedinfotitle"><b>DUMP1090</b>';
+	    html += '<tr><td colspan="' + columns + '" id="selectedinfotitle"><b>-</b>';
 	}
-	
+
 	if (selected && selected.squawk == 7500) { // Lets hope we never see this... Aircraft Hijacking
 		html += '&nbsp;<span class="squawk7500">&nbsp;Squawking: Aircraft Hijacking&nbsp;</span>';
 	} else if (selected && selected.squawk == 7600) { // Radio Failure
@@ -273,7 +273,7 @@ function refreshSelected() {
 	    html += '&nbsp;<a href="http://flightaware.com/live/flight/'+selected.flight+'" target="_blank">[FlightAware]</a>';
 	}
 	html += '<td></tr>';
-	
+
 	if (selected) {
 	    if (Metric) {
         	html += '<tr><td>Altitude: ' + Math.round(selected.altitude / 3.2828) + ' m</td>';
@@ -283,14 +283,14 @@ function refreshSelected() {
     } else {
         html += '<tr><td>Altitude: n/a</td>';
     }
-		
+
 	if (selected && selected.squawk != '0000') {
 		html += '<td>Squawk: ' + selected.squawk + '</td></tr>';
 	} else {
 	    html += '<td>Squawk: n/a</td></tr>';
 	}
-	
-	html += '<tr><td>Speed: ' 
+
+	html += '<tr><td>Speed: '
 	if (selected) {
 	    if (Metric) {
 	        html += Math.round(selected.speed * 1.852) + ' km/h';
@@ -301,14 +301,14 @@ function refreshSelected() {
 	    html += 'n/a';
 	}
 	html += '</td>';
-	
+
 	if (selected) {
         html += '<td>ICAO (hex): ' + selected.icao + '</td></tr>';
     } else {
         html += '<td>ICAO (hex): n/a</td></tr>'; // Something is wrong if we are here
     }
-    
-    html += '<tr><td>Track: ' 
+
+    html += '<tr><td>Track: '
 	if (selected && selected.vTrack) {
 	    html += selected.track + '&deg;' + ' (' + normalizeTrack(selected.track, selected.vTrack)[1] +')';
 	} else {
@@ -319,13 +319,13 @@ function refreshSelected() {
 	html += '<tr><td colspan="' + columns + '" align="center">Lat/Long: ';
 	if (selected && selected.vPosition) {
 	    html += selected.latitude + ', ' + selected.longitude + '</td></tr>';
-	    
+
 	    // Let's show some extra data if we have site coordinates
 	    if (SiteShow) {
             var siteLatLon  = new google.maps.LatLng(SiteLat, SiteLon);
             var planeLatLon = new google.maps.LatLng(selected.latitude, selected.longitude);
             var dist = google.maps.geometry.spherical.computeDistanceBetween (siteLatLon, planeLatLon);
-            
+
             if (Metric) {
                 dist /= 1000;
             } else {
@@ -337,7 +337,7 @@ function refreshSelected() {
         } // End of SiteShow
 	} else {
 	    if (SiteShow) {
-	        html += '<tr><td colspan="' + columns + '" align="center">Distance from Site: n/a ' + 
+	        html += '<tr><td colspan="' + columns + '" align="center">Distance from Site: n/a ' +
 	            (Metric ? ' km' : ' NM') + '</td></tr>';
 	    } else {
     	    html += 'n/a</td></tr>';
@@ -345,7 +345,7 @@ function refreshSelected() {
 	}
 
 	html += '</table>';
-	
+
 	document.getElementById('plane_detail').innerHTML = html;
 }
 
@@ -354,7 +354,7 @@ function refreshSelected() {
 // TODO: Edit C code to add a valid speed flag
 // TODO: Edit js code to use said flag
 function normalizeSpeed(speed, valid) {
-	return speed	
+	return speed
 }
 
 // Returns back a long string, short string, and the track if we have a vaild track path
@@ -436,13 +436,13 @@ function refreshTableInfo() {
 			if (tableplane.squawk == 7700) {
 				specialStyle += " squawk7700";
 			}
-			
+
 			if (tableplane.vPosition == true) {
 				html += '<tr class="plane_table_row vPosition' + specialStyle + '">';
 			} else {
 				html += '<tr class="plane_table_row ' + specialStyle + '">';
 		    }
-		    
+
 			html += '<td>' + tableplane.icao + '</td>';
 			html += '<td>' + tableplane.flight + '</td>';
 			if (tableplane.squawk != '0000' ) {
@@ -450,7 +450,7 @@ function refreshTableInfo() {
     	    } else {
     	        html += '<td align="right">&nbsp;</td>';
     	    }
-    	    
+
     	    if (Metric) {
     			html += '<td align="right">' + Math.round(tableplane.altitude / 3.2828) + '</td>';
     			html += '<td align="right">' + Math.round(tableplane.speed * 1.852) + '</td>';
@@ -477,7 +477,7 @@ function refreshTableInfo() {
                             }
                             html += '</td>';
                         }
-			
+
 			html += '<td align="right">';
 			if (tableplane.vTrack) {
     			 html += normalizeTrack(tableplane.track, tableplane.vTrack)[2];
@@ -524,7 +524,7 @@ function setASC_DESC(iCol) {
 	}
 }
 
-function sortTable(szTableID,iCol) { 
+function sortTable(szTableID,iCol) {
 	//if iCol was not provided, and iSortCol is not set, assign default value
 	if (typeof iCol==='undefined'){
 		if(iSortCol!=-1){
@@ -602,7 +602,7 @@ function selectPlaneByHex(hex) {
 			Planes[SelectedPlane].funcUpdateLines();
 			Planes[SelectedPlane].marker.setIcon(Planes[SelectedPlane].funcGetIcon());
 		}
-	} else { 
+	} else {
 		SelectedPlane = null;
 	}
     refreshSelected();
@@ -614,16 +614,16 @@ function resetMap() {
     localStorage['CenterLat'] = CONST_CENTERLAT;
     localStorage['CenterLon'] = CONST_CENTERLON;
     localStorage['ZoomLvl']   = CONST_ZOOMLVL;
-    
+
     // Try to read values from localStorage else use CONST_s
     CenterLat = Number(localStorage['CenterLat']) || CONST_CENTERLAT;
     CenterLon = Number(localStorage['CenterLon']) || CONST_CENTERLON;
     ZoomLvl   = Number(localStorage['ZoomLvl']) || CONST_ZOOMLVL;
-    
+
     // Set and refresh
 	GoogleMap.setZoom(parseInt(ZoomLvl));
 	GoogleMap.setCenter(new google.maps.LatLng(parseFloat(CenterLat), parseFloat(CenterLon)));
-	
+
 	if (SelectedPlane) {
 	    selectPlaneByHex(SelectedPlane);
 	}
@@ -635,17 +635,17 @@ function resetMap() {
 function drawCircle(marker, distance) {
     if (typeof distance === 'undefined') {
         return false;
-        
+
         if (!(!isNaN(parseFloat(distance)) && isFinite(distance)) || distance < 0) {
             return false;
         }
     }
-    
+
     distance *= 1000.0;
     if (!Metric) {
         distance *= 1.852;
     }
-    
+
     // Add circle overlay and bind to marker
     var circle = new google.maps.Circle({
       map: GoogleMap,
