@@ -647,12 +647,13 @@ char *aircraftsToJson(int *len) {
     while(a) {
         int position = 0;
         int track = 0;
-
+        int speed = 0;
+        
         if (a->modeACflags & MODEAC_MSG_FLAG) { // skip any fudged ICAO records Mode A/C
             a = a->next;
             continue;
         }
-
+        
         if (a->bFlags & MODES_ACFLAGS_LATLON_VALID) {
             position = 1;
         }
@@ -661,13 +662,21 @@ char *aircraftsToJson(int *len) {
             track = 1;
         }
         
+        if (a->bFlags & MODES_ACFLAGS_SPEED_VALID) {
+            speed = 1;
+        }
+        
+        unsigned char * pSig       = a->signalLevel;
+        unsigned int signalAverage = (pSig[0] + pSig[1] + pSig[2] + pSig[3] +
+                                      pSig[4] + pSig[5] + pSig[6] + pSig[7] + 3) >> 3;
+        
         // No metric conversion
         l = snprintf(p,buflen,
-            "{\"hex\":\"%06x\", \"squawk\":\"%04x\", \"flight\":\"%s\", \"lat\":%f, "
-            "\"lon\":%f, \"validposition\":%d, \"altitude\":%d,  \"vert_rate\":%d,\"track\":%d, \"validtrack\":%d,"
-            "\"speed\":%d, \"messages\":%ld, \"seen\":%d},\n",
-            a->addr, a->modeA, a->flight, a->lat, a->lon, position, a->altitude, a->vert_rate, a->track, track,
-            a->speed, a->messages, (int)(now - a->seen));
+                     "{\"hex\":\"%06x\", \"squawk\":\"%04x\", \"flight\":\"%s\", \"lat\":%f, "
+                     "\"lon\":%f, \"validposition\":%d, \"altitude\":%d, \"vert_rate\":%d,\"track\":%d, \"validtrack\":%d,"
+                     "\"speed\":%d, \"validspeed\":%d, \"average\":%d, \"messages\":%ld, \"seen\":%d},\n",
+                     a->addr, a->modeA, a->flight, a->lat, a->lon, position, a->altitude, a->vert_rate, a->track, track,
+                     a->speed, speed, signalAverage, a->messages, (int)(now - a->seen));
         p += l; buflen -= l;
         
         //Resize if needed
